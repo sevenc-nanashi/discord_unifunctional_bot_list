@@ -3,7 +3,47 @@ services:
     build: backend
     ports:
       - ${BACKEND_PORT}:3000
+    environment:
+      - DATABASE_USER
+      - DATABASE_HOST
+      - DATABASE_PASSWORD
+      - DATABASE_NAME
+      - DATABASE_VOLUME
+      - DATABASE_PORT
+      - RAILS_ENV=production
+    depends_on:
+      - database
+  backend_create:
+    profiles:
+      - setup
+    build: backend
+    environment:
+      - DATABASE_USER
+      - DATABASE_HOST
+      - DATABASE_PASSWORD
+      - DATABASE_NAME
+      - DATABASE_VOLUME
+      - DATABASE_PORT
+      - RAILS_ENV=production
+    depends_on:
+      - database
+    command: bundle exec rails db:create
   frontend:
     build: frontend
     ports:
       - ${FRONTEND_PORT}:3000
+  database:
+    hostname: database
+    image: postgres
+    expose:
+      - ${DATABASE_PORT}
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+    volumes:
+      - ${DATABASE_VOLUME}:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    env_file: .env
+    command: -p ${DATABASE_PORT}
